@@ -4,8 +4,7 @@
 package bindings
 
 import (
-	"bytes"
-	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"math/big"
 	"strings"
@@ -1171,30 +1170,24 @@ func (it *TaikoL1ClientBlockProposedIterator) Close() error {
 
 // TaikoL1ClientBlockProposed represents a BlockProposed event raised by the TaikoL1Client contract.
 type TaikoL1ClientBlockProposed struct {
-	BlockId *big.Int
-	Prover  common.Address
-	Reward  *big.Int
-	Meta    TaikoDataBlockMetadata
-	Raw     types.Log // Blockchain specific contextual infos
+	BlockId *big.Int `json:"block_id"`
+	Prover  common.Address `json:"prover"`
+	Reward  *big.Int `json:"reward"`
+	Meta    TaikoDataBlockMetadata `json:"meta"`
+	Raw     types.Log `json:"-"` // Blockchain specific contextual infos
 }
 
 func (t *TaikoL1ClientBlockProposed) ToBytes() ([]byte,error) {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, t)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return json.Marshal(t)
 }
 
 func TaikoL1ClientBlockProposedFromBytes(bs []byte ) (*TaikoL1ClientBlockProposed, error){
-	buf := bytes.NewReader(bs)
-	data := new(TaikoL1ClientBlockProposed)
-	err := binary.Read(buf, binary.BigEndian, data)
+	t := new(TaikoL1ClientBlockProposed)
+	err := json.Unmarshal(bs, t)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return t, nil
 }
 
 

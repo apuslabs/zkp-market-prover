@@ -362,7 +362,7 @@ func (p *Prover) onBlockProposed(
 	event *bindings.TaikoL1ClientBlockProposed,
 	end eventIterator.EndBlockProposedEventIterFunc,
 ) error {
-	if event.Prover != p.proverAddress {
+	if event.Prover != p.proverAddress || event.BlockId.Int64() <= 1089491{
 		return nil
 	}
 
@@ -377,7 +377,7 @@ func (p *Prover) onBlockProposed(
 		log.Error("Apus Market: onBlockProposed", "index", "event.ToBytes", "err", err)
 		return err
 	}
-	if _, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, uint64(time.Now().Unix()), bindings.ApusDatarewardInfo{});derr != nil  {
+	if _, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, 10000, bindings.ApusDatarewardInfo{Token: p.proverAddress, Amount: big.NewInt(10)});derr != nil  {
 		return fmt.Errorf("failed to get apus task: %d, err: %w, dispatch err: %v", event.BlockId, err, derr)
 	}
 
@@ -647,14 +647,8 @@ func (p *Prover) onBlockProposed(
 			return err
 		}
 
-		task, _, err := p.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
-		if err != nil {
-			log.Error("Apus Market: faild to dispatch task to client")
-			return err
-		}
-
-		if _, err = p.rpc.ApusTask.DispatchTaskToClient(tx, task.Id); err != nil {
-			log.Error("Apus Market: faild to dispatch task to client")
+		if _, err = p.rpc.ApusTask.DispatchTaskToClient(tx, event.BlockId); err != nil {
+			log.Error("Apus Market: faild to dispatch task to client", "error", err)
 			return err
 		}
 		return p.validProofSubmitter.RequestProof(ctx, event)

@@ -263,6 +263,7 @@ func (p *ZkevmRpcdProducer) requestProof(opts *ProofRequestOptions) (*RpcdOutput
 		return nil, err
 	}
 
+	log.Info("ApusMarket", "index", "requestProof", "url", opts.RpcdEndPoint)
 	res, err := http.Post(opts.RpcdEndPoint, "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return nil, err

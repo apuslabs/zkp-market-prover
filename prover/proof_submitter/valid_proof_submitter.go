@@ -297,7 +297,12 @@ func (s *ValidProofSubmitter) SubmitProof(
 			return tx, err
 		}
 
-		s.rpc.ApusTask.SubmitTask(nil, 0, proofWithHeader.BlockID, input)
+		apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
+		if terr != nil {
+			return nil, err
+		}
+
+		s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, input)
 
 
 
