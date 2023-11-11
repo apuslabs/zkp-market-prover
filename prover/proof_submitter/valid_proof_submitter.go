@@ -104,6 +104,15 @@ func NewValidProofSubmitter(
 
 // RequestProof implements the ProofSubmitter interface.
 func (s *ValidProofSubmitter) RequestProof(ctx context.Context, event *bindings.TaikoL1ClientBlockProposed) error {
+
+	// 当前任务是否插入了?
+	task, client, err := s.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
+	if err != nil {
+		return fmt.Errorf("failed to get apus task: %d, err: %w", event.BlockId, err)
+	}
+	log.Info("ApusMarket: find", "task", task.Id, "task_type", "taiko_task", "blockId", task.UniqID)
+
+
 	l1Origin, err := s.rpc.WaitL1Origin(ctx, event.BlockId)
 	if err != nil {
 		return fmt.Errorf("failed to fetch l1Origin, blockID: %d, err: %w", event.BlockId, err)
@@ -151,6 +160,7 @@ func (s *ValidProofSubmitter) RequestProof(ctx context.Context, event *bindings.
 		Graffiti:           common.Bytes2Hex(s.graffiti[:]),
 		GasUsed:            block.GasUsed(),
 		ParentGasUsed:      parent.GasUsed(),
+		RpcdEndPoint:       client.Url,
 	}
 
 	if err := s.proofProducer.RequestProof(
@@ -282,6 +292,14 @@ func (s *ValidProofSubmitter) SubmitProof(
 				return nil, err
 			}
 		}
+		tx, err := s.rpc.TaikoL1.ProveBlock(txOpts, blockID.Uint64(), input)
+		if err != nil {
+			return tx, err
+		}
+
+		s.rpc.ApusTask.SubmitTask(nil, 0, proofWithHeader.BlockID, input)
+
+
 
 		return s.rpc.TaikoL1.ProveBlock(txOpts, blockID.Uint64(), input)
 	}

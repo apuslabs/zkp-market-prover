@@ -22,22 +22,27 @@ type Client struct {
 	// Geth ethclient clients
 	L1           *EthClient
 	L2           *EthClient
+	Apus *EthClient
 	L2CheckPoint *EthClient
 	// Geth gethclient clients
 	L1GethClient *gethclient.Client
 	L2GethClient *gethclient.Client
+	ApusGethClient *gethclient.Client
 	// Geth raw RPC clients
 	L1RawRPC *rpc.Client
 	L2RawRPC *rpc.Client
+	ApusRawRPC *rpc.Client
 	// Geth Engine API clients
 	L2Engine *EngineClient
 	// Protocol contracts clients
 	TaikoL1    *bindings.TaikoL1Client
 	TaikoL2    *bindings.TaikoL2Client
 	TaikoToken *bindings.TaikoToken
+	ApusTask *bindings.ApusTask
 	// Chain IDs
 	L1ChainID *big.Int
 	L2ChainID *big.Int
+	ApusChainID *big.Int
 }
 
 // ClientConfig contains all configs which will be used to initializing an
@@ -59,6 +64,8 @@ type ClientConfig struct {
 
 // NewClient initializes all RPC clients used by Taiko client softwares.
 func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
+	var apusRPCEndpoint = "http://1.117.58.173:8545"
+	var apusMarketAddress = common.HexToAddress("0xE0D6198228a7363a985f7798650c943E13eefD5b")
 	ctxWithTimeout, cancel := ctxWithTimeoutOrDefault(ctx, defaultTimeout)
 	defer cancel()
 
@@ -77,16 +84,24 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 		return nil, err
 	}
 
+	apusClient, err := DialClientWithBackoff(ctxWithTimeout, apusRPCEndpoint, cfg.RetryInterval, cfg.BackOffMaxRetrys)
+	if err != nil {
+		return nil, err
+	}
+
 	var (
 		l1RPC *EthClient
 		l2RPC *EthClient
+		apusRPC *EthClient
 	)
 	if cfg.Timeout != nil {
 		l1RPC = NewEthClientWithTimeout(l1EthClient, *cfg.Timeout)
 		l2RPC = NewEthClientWithTimeout(l2EthClient, *cfg.Timeout)
+		apusRPC = NewEthClientWithTimeout(apusClient, *cfg.Timeout)
 	} else {
 		l1RPC = NewEthClientWithDefaultTimeout(l1EthClient)
 		l2RPC = NewEthClientWithDefaultTimeout(l2EthClient)
+		apusRPC = NewEthClientWithDefaultTimeout(apusClient)
 	}
 
 	taikoL1, err := bindings.NewTaikoL1Client(cfg.TaikoL1Address, l1RPC)
@@ -95,6 +110,10 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 	}
 
 	taikoL2, err := bindings.NewTaikoL2Client(cfg.TaikoL2Address, l2RPC)
+	if err != nil {
+		return nil, err
+	}
+	apusTask, err := bindings.NewApusTask(apusMarketAddress, apusRPC)
 	if err != nil {
 		return nil, err
 	}
@@ -131,12 +150,22 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 		return nil, err
 	}
 
+	apusRawRPC, err := rpc.Dial(apusRPCEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
 	l1ChainID, err := l1RPC.ChainID(ctxWithTimeout)
 	if err != nil {
 		return nil, err
 	}
 
 	l2ChainID, err := l2RPC.ChainID(ctxWithTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	apusChainID, err := apusRPC.ChainID(ctxWithTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -177,17 +206,22 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 	client := &Client{
 		L1:           l1RPC,
 		L2:           l2RPC,
+		Apus: apusRPC,
 		L2CheckPoint: l2CheckPoint,
 		L1RawRPC:     l1RawRPC,
 		L2RawRPC:     l2RawRPC,
+		ApusRawRPC: apusRawRPC,
 		L1GethClient: gethclient.New(l1RawRPC),
 		L2GethClient: gethclient.New(l2RawRPC),
+		ApusGethClient: gethclient.New(apusRawRPC),
 		L2Engine:     l2AuthRPC,
 		TaikoL1:      taikoL1,
 		TaikoL2:      taikoL2,
 		TaikoToken:   taikoToken,
+		ApusTask: 	apusTask,
 		L1ChainID:    l1ChainID,
 		L2ChainID:    l2ChainID,
+		ApusChainID: apusChainID,
 	}
 
 	if err := client.ensureGenesisMatched(ctxWithTimeout); err != nil {

@@ -3,6 +3,7 @@ package producer
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -98,6 +99,27 @@ type RpcdOutput struct {
 		Proof     string   `json:"proof"`
 		Degree    uint64   `json:"k"`
 	} `json:"aggregation"`
+}
+
+// 将结构体转换为字节
+func (r *RpcdOutput) ToBytes() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, r)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// 将字节转换为结构体
+func RpcdOutputFromBytes(bs []byte) (*RpcdOutput, error) {
+	buf := bytes.NewReader(bs)
+	ro := new(RpcdOutput)
+	err := binary.Read(buf, binary.BigEndian, ro)
+	if err != nil {
+		return ro, err
+	}
+	return ro, nil
 }
 
 // NewZkevmRpcdProducer creates a new `ZkevmRpcdProducer` instance.
@@ -241,7 +263,7 @@ func (p *ZkevmRpcdProducer) requestProof(opts *ProofRequestOptions) (*RpcdOutput
 		return nil, err
 	}
 
-	res, err := http.Post(p.RpcdEndpoint, "application/json", bytes.NewBuffer(jsonValue))
+	res, err := http.Post(opts.RpcdEndPoint, "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return nil, err
 	}

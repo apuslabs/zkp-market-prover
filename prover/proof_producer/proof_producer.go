@@ -30,6 +30,7 @@ type ProofRequestOptions struct {
 	Graffiti           string
 	GasUsed            uint64
 	ParentGasUsed      uint64
+	RpcdEndPoint 	   string
 }
 
 type ProofWithHeader struct {

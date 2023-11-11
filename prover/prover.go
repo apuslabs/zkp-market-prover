@@ -2,6 +2,7 @@ package prover
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"errors"
 	"fmt"
 	"math/big"
@@ -361,6 +362,25 @@ func (p *Prover) onBlockProposed(
 	event *bindings.TaikoL1ClientBlockProposed,
 	end eventIterator.EndBlockProposedEventIterFunc,
 ) error {
+	if event.Prover != p.proverAddress {
+		return nil
+	}
+
+	tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+	if err != nil {
+		log.Error("Apus Market: onBlockProposed", "index", "getTxOps", "err", err)
+		return err
+	}
+	//func (_ApusTask *ApusTaskTransactor) PostTask(opts *bind.TransactOpts, _tp uint8, uniqID *big.Int, input []byte, expiry uint64, ri ApusDatarewardInfo) (*types.Transaction, error) {
+	input, err := event.ToBytes()
+	if err != nil {
+		log.Error("Apus Market: onBlockProposed", "index", "event.ToBytes", "err", err)
+		return err
+	}
+	if _, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, uint64(time.Now().Unix()), bindings.ApusDatarewardInfo{});derr != nil  {
+		return fmt.Errorf("failed to get apus task: %d, err: %w, dispatch err: %v", event.BlockId, err, derr)
+	}
+
 	// If there is newly generated proofs, we need to submit them as soon as possible.
 	if len(p.proofGenerationCh) > 0 {
 		log.Info("onBlockProposed early return", "proofGenerationChannelLength", len(p.proofGenerationCh))
@@ -621,6 +641,22 @@ func (p *Prover) onBlockProposed(
 		})
 		p.currentBlocksBeingProvenMutex.Unlock()
 
+		tx, err = getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+		if err != nil {
+			log.Error("Apus Market: onBlockProposed:DispatchTaskToClient", "index", "getTxOps", "err", err)
+			return err
+		}
+
+		task, _, err := p.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
+		if err != nil {
+			log.Error("Apus Market: faild to dispatch task to client")
+			return err
+		}
+
+		if _, err = p.rpc.ApusTask.DispatchTaskToClient(tx, task.Id); err != nil {
+			log.Error("Apus Market: faild to dispatch task to client")
+			return err
+		}
 		return p.validProofSubmitter.RequestProof(ctx, event)
 	}
 
@@ -1077,4 +1113,30 @@ func (p *Prover) requestProofForBlockId(blockId *big.Int, l1Height *big.Int) err
 	}()
 
 	return nil
+}
+
+// getTxOpts creates a bind.TransactOpts instance using the given private key.
+func getTxOpts(
+	ctx context.Context,
+	cli *rpc.EthClient,
+	privKey *ecdsa.PrivateKey,
+	chainID *big.Int,
+) (*bind.TransactOpts, error) {
+	opts, err := bind.NewKeyedTransactorWithChainID(privKey, chainID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate prepareBlock transaction options: %w", err)
+	}
+
+	gasTipCap, err := cli.SuggestGasTipCap(ctx)
+	if err != nil {
+		if rpc.IsMaxPriorityFeePerGasNotFoundError(err) {
+			gasTipCap = rpc.FallbackGasTipCap
+		} else {
+			return nil, err
+		}
+	}
+
+	opts.GasTipCap = gasTipCap
+
+	return opts, nil
 }

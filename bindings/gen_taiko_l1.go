@@ -4,6 +4,8 @@
 package bindings
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"math/big"
 	"strings"
@@ -1175,6 +1177,26 @@ type TaikoL1ClientBlockProposed struct {
 	Meta    TaikoDataBlockMetadata
 	Raw     types.Log // Blockchain specific contextual infos
 }
+
+func (t *TaikoL1ClientBlockProposed) ToBytes() ([]byte,error) {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, t)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func TaikoL1ClientBlockProposedFromBytes(bs []byte ) (*TaikoL1ClientBlockProposed, error){
+	buf := bytes.NewReader(bs)
+	data := new(TaikoL1ClientBlockProposed)
+	err := binary.Read(buf, binary.BigEndian, data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 
 // FilterBlockProposed is a free log retrieval operation binding the contract event 0xe3713939242e9072c6fbb16f90e98d4b583d66b9fae9208ba2148aa8d6e82af6.
 //
