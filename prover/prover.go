@@ -362,23 +362,31 @@ func (p *Prover) onBlockProposed(
 	event *bindings.TaikoL1ClientBlockProposed,
 	end eventIterator.EndBlockProposedEventIterFunc,
 ) error {
-	if event.Prover != p.proverAddress || event.BlockId.Int64() <= 1089491{
+	if event.Prover != p.proverAddress {
 		return nil
 	}
 
-	tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+	task, _, err := p.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
 	if err != nil {
-		log.Error("Apus Market: onBlockProposed", "index", "getTxOps", "err", err)
+		log.Error("Apus Market: onBlockProposed", "index", "get_task", "err", err)
 		return err
 	}
-	//func (_ApusTask *ApusTaskTransactor) PostTask(opts *bind.TransactOpts, _tp uint8, uniqID *big.Int, input []byte, expiry uint64, ri ApusDatarewardInfo) (*types.Transaction, error) {
-	input, err := event.ToBytes()
-	if err != nil {
-		log.Error("Apus Market: onBlockProposed", "index", "event.ToBytes", "err", err)
-		return err
-	}
-	if _, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, 10000, bindings.ApusDatarewardInfo{Token: p.proverAddress, Amount: big.NewInt(10)});derr != nil  {
-		return fmt.Errorf("failed to get apus task: %d, err: %w, dispatch err: %v", event.BlockId, err, derr)
+
+	if task.Stat == 0 || task.ClientId.Int64() <= 0 {
+		tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+		if err != nil {
+			log.Error("Apus Market: onBlockProposed", "index", "getTxOps", "err", err)
+			return err
+		}
+		//func (_ApusTask *ApusTaskTransactor) PostTask(opts *bind.TransactOpts, _tp uint8, uniqID *big.Int, input []byte, expiry uint64, ri ApusDatarewardInfo) (*types.Transaction, error) {
+		input, err := event.ToBytes()
+		if err != nil {
+			log.Error("Apus Market: onBlockProposed", "index", "event.ToBytes", "err", err)
+			return err
+		}
+		if _, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, 10000, bindings.ApusDatarewardInfo{Token: p.proverAddress, Amount: big.NewInt(10)});derr != nil  {
+			return fmt.Errorf("failed to get apus task: %d, err: %w, dispatch err: %v", event.BlockId, err, derr)
+		}
 	}
 
 	// If there is newly generated proofs, we need to submit them as soon as possible.
@@ -641,7 +649,7 @@ func (p *Prover) onBlockProposed(
 		})
 		p.currentBlocksBeingProvenMutex.Unlock()
 
-		tx, err = getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+		tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
 		if err != nil {
 			log.Error("Apus Market: onBlockProposed:DispatchTaskToClient", "index", "getTxOps", "err", err)
 			return err

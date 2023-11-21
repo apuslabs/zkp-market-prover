@@ -105,9 +105,8 @@ func NewValidProofSubmitter(
 // RequestProof implements the ProofSubmitter interface.
 func (s *ValidProofSubmitter) RequestProof(ctx context.Context, event *bindings.TaikoL1ClientBlockProposed) error {
 
-	// 当前任务是否插入了?
 	task, client, err := s.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
-	if err != nil {
+	if err != nil || client.Id.Int64() == 0 {
 		return fmt.Errorf("failed to get apus task: %d, err: %w", event.BlockId, err)
 	}
 	log.Info("ApusMarket: find", "task", task.Id, "task_type", "taiko_task", "blockId", task.UniqID)
@@ -297,15 +296,20 @@ func (s *ValidProofSubmitter) SubmitProof(
 			return tx, err
 		}
 
-		apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
-		if terr != nil {
-			return nil, err
+		submitApusTask := func() {
+			apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
+			if terr != nil {
+				log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
+				return
+			}
+
+			tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, input)
+			if err != nil {
+				log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
+			}
+			log.Info("Apus Market: ", "index", "submitTask", "block_id", proofWithHeader.BlockID)
 		}
-
-		s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, input)
-
-
-
+		defer submitApusTask()
 		return s.rpc.TaikoL1.ProveBlock(txOpts, blockID.Uint64(), input)
 	}
 
