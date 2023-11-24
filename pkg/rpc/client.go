@@ -64,8 +64,8 @@ type ClientConfig struct {
 
 // NewClient initializes all RPC clients used by Taiko client softwares.
 func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
-	var apusRPCEndpoint = "https://opbnb-testnet-rpc.bnbchain.org"
-	var apusMarketAddress = common.HexToAddress("0x2CB6A7Bd8888452858F47c0dE611f398D3d36298")
+	var apusRPCEndpoint = "http://1.117.58.173:8545"
+	var apusMarketAddress = common.HexToAddress("0xd98157CB535DE0eDe6d4A4813c96dB92b0bB79ec")
 	ctxWithTimeout, cancel := ctxWithTimeoutOrDefault(ctx, defaultTimeout)
 	defer cancel()
 

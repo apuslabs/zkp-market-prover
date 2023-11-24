@@ -9,6 +9,7 @@ LD_FLAGS := -ldflags "$(LD_FLAGS_ARGS)"
 build:
 	which go
 	GO111MODULE=on GOOS=linux go build -v $(LD_FLAGS) -o bin/taiko-client-linux cmd/main.go
+	#GO111MODULE=on GOOS=windows go build -v $(LD_FLAGS) -o bin/taiko-client-win cmd/main.go
 	GO111MODULE=on go build -v $(LD_FLAGS) -o bin/taiko-client cmd/main.go
 
 clean:

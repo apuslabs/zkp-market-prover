@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"net/http"
 	"strings"
@@ -76,7 +77,7 @@ type Prover struct {
 	proofGenerationCh chan *proofProducer.ProofWithHeader
 
 	// Concurrency guards
-	proposeConcurrencyGuard     chan struct{}
+	//proposeConcurrencyGuard     chan struct{}
 	submitProofConcurrencyGuard chan struct{}
 	submitProofTxMutex          *sync.Mutex
 
@@ -113,7 +114,6 @@ func InitFromConfig(ctx context.Context, p *Prover, cfg *Config) (err error) {
 	p.currentBlocksBeingProvenMutex = new(sync.Mutex)
 	p.currentBlocksWaitingForProofWindow = make(map[uint64]uint64, 0)
 	p.currentBlocksWaitingForProofWindowMutex = new(sync.Mutex)
-	p.capacityManager = capacity.New(cfg.Capacity, cfg.TempCapacityExpiresAt)
 
 	// Clients
 	if p.rpc, err = rpc.NewClient(p.ctx, &rpc.ClientConfig{
@@ -152,8 +152,8 @@ func InitFromConfig(ctx context.Context, p *Prover, cfg *Config) (err error) {
 	}
 
 	// Concurrency guards
-	p.proposeConcurrencyGuard = make(chan struct{}, cfg.MaxConcurrentProvingJobs)
-	p.submitProofConcurrencyGuard = make(chan struct{}, cfg.MaxConcurrentProvingJobs)
+	//p.proposeConcurrencyGuard = make(chan struct{}, math.MaxInt)
+	p.submitProofConcurrencyGuard = make(chan struct{}, math.MaxInt)
 
 	p.checkProofWindowExpiredInterval = p.cfg.CheckProofWindowExpiredInterval
 
@@ -210,6 +210,7 @@ func InitFromConfig(ctx context.Context, p *Prover, cfg *Config) (err error) {
 		return err
 	}
 
+	p.capacityManager = capacity.New(cfg.Capacity, cfg.TempCapacityExpiresAt, p.rpc)
 	// Prover server
 	proverServerOpts := &server.NewProverServerOpts{
 		ProverPrivateKey: p.cfg.L1ProverPrivKey,
@@ -363,6 +364,9 @@ func (p *Prover) onBlockProposed(
 	end eventIterator.EndBlockProposedEventIterFunc,
 ) error {
 	if event.Prover != p.proverAddress {
+		if event.BlockId.Uint64() % 20 == 0 {
+			log.Info("OnBlockProposed", "block_id", event.BlockId, "prover", event.Prover)
+		}
 		return nil
 	}
 
@@ -371,8 +375,7 @@ func (p *Prover) onBlockProposed(
 		log.Error("Apus Market: onBlockProposed", "index", "get_task", "err", err)
 		return err
 	}
-
-	if task.Stat == 0 || task.ClientId.Int64() <= 0 {
+	if task.Id.Int64() <= 0 {
 		tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
 		if err != nil {
 			log.Error("Apus Market: onBlockProposed", "index", "getTxOps", "err", err)
@@ -478,7 +481,7 @@ func (p *Prover) onBlockProposed(
 	metrics.ProverReceivedProposedBlockGauge.Update(event.BlockId.Int64())
 
 	handleBlockProposedEvent := func() error {
-		defer func() { <-p.proposeConcurrencyGuard }()
+		//defer func() { <-p.proposeConcurrencyGuard }()
 
 		// Check whether the block has been verified.
 		isVerified, err := p.isBlockVerified(event.BlockId)
@@ -503,6 +506,20 @@ func (p *Prover) onBlockProposed(
 		}
 
 		if !needNewProof {
+			if task.Stat == 1 {
+				tx, terr := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+				if terr != nil {
+					log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
+					return nil
+				}
+
+				_, err := p.rpc.ApusTask.SubmitTask(tx, 0, event.BlockId, []byte("already prove"))
+				if err != nil {
+					log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
+				} else {
+					log.Info("Apus Market: ", "index", "submitTask", "block_id", event.BlockId)
+				}
+			}
 			return nil
 		}
 
@@ -648,21 +665,30 @@ func (p *Prover) onBlockProposed(
 			}
 		})
 		p.currentBlocksBeingProvenMutex.Unlock()
-
-		tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+		log.Info("Apus Market", "index", "dispatch_client", "blcok_id", event.BlockId)
+		taskInfo, _, err := p.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
 		if err != nil {
-			log.Error("Apus Market: onBlockProposed:DispatchTaskToClient", "index", "getTxOps", "err", err)
+			log.Error("Apus Market: onBlockProposed", "index", "get_task", "err", err)
 			return err
 		}
 
-		if _, err = p.rpc.ApusTask.DispatchTaskToClient(tx, event.BlockId); err != nil {
-			log.Error("Apus Market: faild to dispatch task to client", "error", err)
-			return err
+		// 如果task还没有指定 client机器
+		if taskInfo.Stat == 0 || taskInfo.ClientId.Int64() <= 0 {
+			tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+			if err != nil {
+				log.Error("Apus Market: onBlockProposed:DispatchTaskToClient", "index", "getTxOps", "err", err)
+				return err
+			}
+
+			if _, err = p.rpc.ApusTask.DispatchTaskToClient(tx, event.BlockId); err != nil {
+				log.Error("Apus Market: faild to dispatch task to client", "block_id", event.BlockId, "error", err)
+				return err
+			}
 		}
 		return p.validProofSubmitter.RequestProof(ctx, event)
 	}
 
-	p.proposeConcurrencyGuard <- struct{}{}
+	//p.proposeConcurrencyGuard <- struct{}{}
 
 	newL1Current, err := p.rpc.L1.HeaderByHash(ctx, event.Raw.BlockHash)
 	if err != nil {
@@ -1073,7 +1099,7 @@ func (p *Prover) requestProofForBlockId(blockId *big.Int, l1Height *big.Int) err
 		})
 		p.currentBlocksBeingProvenMutex.Unlock()
 
-		p.proposeConcurrencyGuard <- struct{}{}
+		//p.proposeConcurrencyGuard <- struct{}{}
 
 		if err := p.validProofSubmitter.RequestProof(ctx, event); err != nil {
 			return err
@@ -1083,7 +1109,7 @@ func (p *Prover) requestProofForBlockId(blockId *big.Int, l1Height *big.Int) err
 	}
 
 	handleBlockProposedEvent := func() error {
-		defer func() { <-p.proposeConcurrencyGuard }()
+		//defer func() { <-p.proposeConcurrencyGuard }()
 
 		iter, err := eventIterator.NewBlockProposedIterator(p.ctx, &eventIterator.BlockProposedIteratorConfig{
 			Client:               p.rpc.L1,

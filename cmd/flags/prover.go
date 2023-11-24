@@ -137,7 +137,7 @@ var (
 	TempCapacityExpiresAt = &cli.DurationFlag{
 		Name:     "prover.tempCapacityExpiresAt",
 		Usage:    "time in seconds temporary capacity lives for, format: 36s",
-		Value:    36 * time.Second,
+		Value:    5 * 60 * time.Second,
 		Category: proverCategory,
 	}
 )

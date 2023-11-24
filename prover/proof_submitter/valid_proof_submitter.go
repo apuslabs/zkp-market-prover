@@ -263,6 +263,27 @@ func (s *ValidProofSubmitter) SubmitProof(
 		return fmt.Errorf("failed to encode TaikoL1.proveBlock inputs: %w", err)
 	}
 
+	submitApusTask := func() {
+		fmt.Println("FUCK submitAPusTask")
+		apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
+		if terr != nil {
+			log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
+			return
+		}
+
+		tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, input)
+		if err != nil {
+			log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
+		} else {
+			log.Info("Apus Market: ", "index", "submitTask", "block_id", proofWithHeader.BlockID)
+		}
+	}
+	submitApusTask()
+
+	input, err = encoding.EncodeProveBlockInput(evidence)
+	if err != nil {
+		return fmt.Errorf("failed to encode TaikoL1.proveBlock inputs: %w", err)
+	}
 	// Send the TaikoL1.proveBlock transaction.
 	sendTx := func(nonce *big.Int) (*types.Transaction, error) {
 		s.mutex.Lock()
@@ -291,25 +312,11 @@ func (s *ValidProofSubmitter) SubmitProof(
 				return nil, err
 			}
 		}
-		tx, err := s.rpc.TaikoL1.ProveBlock(txOpts, blockID.Uint64(), input)
-		if err != nil {
-			return tx, err
-		}
-
-		submitApusTask := func() {
-			apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
-			if terr != nil {
-				log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
-				return
-			}
-
-			tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, input)
-			if err != nil {
-				log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
-			}
-			log.Info("Apus Market: ", "index", "submitTask", "block_id", proofWithHeader.BlockID)
-		}
-		defer submitApusTask()
+		//tx, err := s.rpc.TaikoL1.ProveBlock(txOpts, blockID.Uint64(), input)
+		//if err != nil {
+		//	return tx, err
+		//}
+		//
 		return s.rpc.TaikoL1.ProveBlock(txOpts, blockID.Uint64(), input)
 	}
 
