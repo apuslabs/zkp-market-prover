@@ -246,6 +246,63 @@ func (p *Prover) Start() error {
 	return nil
 }
 
+func (p *Prover) ScanApusTask() {
+
+	ticker := time.NewTicker(10 * time.Second)
+
+	// 启动一个 goroutine 来扫描task任务
+	go func() {
+		latestVerifiedTaskId := big.NewInt(0)
+		for {
+			// 等待定时器触发
+			<-ticker.C
+
+			// 执行定时任务的逻辑
+			log.Info("Apus Market", "index", "scan apus task", "act", "start")
+			// 在这里编写你的定时任务代码
+			lid, err := p.rpc.ApusTask.GetLatestTaskId(&bind.CallOpts{})
+			if err != nil {
+				log.Error("Apus Market", "index", "scan apus task", "act", "get_latest_task_id", "error", err)
+				continue
+			}
+			latestTaskId := lid.Int64()
+			newLatestVerifyTaskId := latestVerifiedTaskId.Int64()
+
+			// 检查 latestVerifiedTaskId ~ latestTaskId 之间的任务, 如果proveBlock, 执行submitTask, 如果verified, 发送奖励
+			for ;latestTaskId > latestVerifiedTaskId.Int64(); latestTaskId -- {
+				newLatestVerifyTaskId = latestTaskId
+				// 查看当前task
+				task, err := p.rpc.ApusTask.Tasks(&bind.CallOpts{}, big.NewInt(latestTaskId))
+				if err != nil {
+					log.Error("Apus Market", "index", "scan apus task", "act", "tasks", "error", err)
+					continue
+				}
+
+				if task.Stat == 1 {
+					// 获取proof
+					event, _ := bindings.TaikoL1ClientBlockProposedFromBytes(task.Input)
+					output, _ := p.validProofSubmitter.RequestProof(context.Background(), event)
+					p.rpc.ApusTask.SubmitTask()
+					// 当前有没完成的
+					newLatestVerifyTaskId = task.Id
+
+				} else if task.Stat == 2 {
+					// 验证是不是已经verified 了
+					p.rpc.ApusTask.RewardTask()
+				}
+
+				block, err := p.rpc.TaikoL1.GetBlock()
+
+			}
+
+			log.Info("Apus Market", "index", "scan apus task", "act", "done")
+		}
+	}()
+}
+
+func (p *Prover) CheckApusTask() {
+}
+
 // eventLoop starts the main loop of Taiko prover.
 func (p *Prover) eventLoop() {
 	defer func() {
@@ -364,7 +421,7 @@ func (p *Prover) onBlockProposed(
 	end eventIterator.EndBlockProposedEventIterFunc,
 ) error {
 	if event.Prover != p.proverAddress {
-		if event.BlockId.Uint64() % 20 == 0 {
+		if event.BlockId.Uint64() % 100 == 0 {
 			log.Info("OnBlockProposed", "block_id", event.BlockId, "prover", event.Prover)
 		}
 		return nil
@@ -381,16 +438,42 @@ func (p *Prover) onBlockProposed(
 			log.Error("Apus Market: onBlockProposed", "index", "getTxOps", "err", err)
 			return err
 		}
-		//func (_ApusTask *ApusTaskTransactor) PostTask(opts *bind.TransactOpts, _tp uint8, uniqID *big.Int, input []byte, expiry uint64, ri ApusDatarewardInfo) (*types.Transaction, error) {
 		input, err := event.ToBytes()
 		if err != nil {
 			log.Error("Apus Market: onBlockProposed", "index", "event.ToBytes", "err", err)
 			return err
 		}
-		if _, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, 10000, bindings.ApusDatarewardInfo{Token: p.proverAddress, Amount: big.NewInt(10)});derr != nil  {
+		tx.GasLimit = 3000000
+
+		txr, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, 10000, bindings.ApusDatarewardInfo{Token: p.proverAddress, Amount: big.NewInt(10)})
+		if derr != nil  {
+			log.Error("Apus Market", "index", "postTask", "block_id", event.BlockId, "error", derr)
 			return fmt.Errorf("failed to get apus task: %d, err: %w, dispatch err: %v", event.BlockId, err, derr)
 		}
+
+		nonce := new(big.Int).SetUint64(txr.Nonce())
+		ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Second * 60)
+		defer cancel()
+
+		if _, err := rpc.WaitReceipt(ctxWithTimeout, p.rpc.Apus, txr); err != nil {
+			log.Warn(
+				"Failed to wait till transaction executed",
+				"blockID", event.BlockId,
+				"txHash", txr.Hash(),
+				"nonce", nonce,
+				"error", err,
+			)
+			return err
+		}
+
+		task, _, err = p.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
+		if err != nil {
+			log.Error("Apus Market: onBlockProposed", "index", "get_task", "err", err)
+			return err
+		}
+		log.Info("Apus Market", "index", "postTask", "block_id", event.BlockId, "transaction", txr.Hash().String(), "chain_id", txr.ChainId().String(), "hash", txr.Hash().String(), "gas", txr.Gas())
 	}
+	log.Info("Apus Market", "index", "on block propose", "block_id", event.BlockId.String(), "task_id", task.Id.String(), "task_block_id", task.UniqID)
 
 	// If there is newly generated proofs, we need to submit them as soon as possible.
 	if len(p.proofGenerationCh) > 0 {
@@ -680,10 +763,28 @@ func (p *Prover) onBlockProposed(
 				return err
 			}
 
-			if _, err = p.rpc.ApusTask.DispatchTaskToClient(tx, event.BlockId); err != nil {
+			tx.GasLimit = 1000000
+			txr, err := p.rpc.ApusTask.DispatchTaskToClient(tx, event.BlockId)
+			if  err != nil {
 				log.Error("Apus Market: faild to dispatch task to client", "block_id", event.BlockId, "error", err)
 				return err
 			}
+
+			nonce := new(big.Int).SetUint64(txr.Nonce())
+			ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Second * 60)
+			defer cancel()
+
+			if _, err := rpc.WaitReceipt(ctxWithTimeout, p.rpc.Apus, txr); err != nil {
+				log.Warn(
+					"Failed to wait till transaction executed",
+					"blockID", event.BlockId,
+					"txHash", txr.Hash(),
+					"nonce", nonce,
+					"error", err,
+				)
+				return err
+			}
+
 		}
 		return p.validProofSubmitter.RequestProof(ctx, event)
 	}

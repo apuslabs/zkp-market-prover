@@ -264,12 +264,14 @@ func (s *ValidProofSubmitter) SubmitProof(
 	}
 
 	submitApusTask := func() {
-		fmt.Println("FUCK submitAPusTask")
 		apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
 		if terr != nil {
 			log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
 			return
 		}
+		//gasPrice, _ := s.rpc.Apus.SuggestGasPrice(ctx)
+		//apusTxOpts.GasPrice = gasPrice
+		//apusTxOpts.GasLimit = 8000000
 
 		tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, input)
 		if err != nil {
