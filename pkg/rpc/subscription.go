@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -31,9 +32,10 @@ func SubscribeEvent(
 func SubscribeBlockVerified(
 	taikoL1 *bindings.TaikoL1Client,
 	ch chan *bindings.TaikoL1ClientBlockVerified,
+	filterProver []common.Address,
 ) event.Subscription {
 	return SubscribeEvent("BlockVerified", func(ctx context.Context) (event.Subscription, error) {
-		sub, err := taikoL1.WatchBlockVerified(nil, ch, nil, nil)
+		sub, err := taikoL1.WatchBlockVerified(nil, ch, nil, filterProver)
 		if err != nil {
 			log.Error("Create TaikoL1.BlockVerified subscription error", "error", err)
 			return nil, err
@@ -49,9 +51,10 @@ func SubscribeBlockVerified(
 func SubscribeBlockProposed(
 	taikoL1 *bindings.TaikoL1Client,
 	ch chan *bindings.TaikoL1ClientBlockProposed,
+	prover []common.Address,
 ) event.Subscription {
 	return SubscribeEvent("BlockProposed", func(ctx context.Context) (event.Subscription, error) {
-		sub, err := taikoL1.WatchBlockProposed(nil, ch, nil, nil)
+		sub, err := taikoL1.WatchBlockProposed(nil, ch, nil, prover)
 		if err != nil {
 			log.Error("Create TaikoL1.BlockProposed subscription error", "error", err)
 			return nil, err

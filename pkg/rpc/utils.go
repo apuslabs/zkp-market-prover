@@ -90,6 +90,7 @@ func CheckProverBalance(
 	return true, nil
 }
 
+
 // WaitReceipt keeps waiting until the given transaction has an execution
 // receipt to know whether it was reverted or not.
 func WaitReceipt(
@@ -122,6 +123,64 @@ func WaitReceipt(
 			return receipt, nil
 		}
 	}
+}
+
+func GetProofTransition (
+	ctx context.Context,
+	cli *Client,
+	id *big.Int,
+) (*bindings.TaikoDataTransition, bool, error){
+
+	ctxWithTimeout, cancel := ctxWithTimeoutOrDefault(ctx, defaultTimeout)
+	defer cancel()
+
+	var parent *types.Header
+	if id.Cmp(common.Big1) == 0 {
+		header, err := cli.L2.HeaderByNumber(ctxWithTimeout, common.Big0)
+		if err != nil {
+			return nil, false, err
+		}
+
+		parent = header
+	} else {
+		parentL1Origin, err := cli.WaitL1Origin(ctxWithTimeout, new(big.Int).Sub(id, common.Big1))
+		if err != nil {
+			return nil, false, err
+		}
+
+		if parent, err = cli.L2.HeaderByHash(ctxWithTimeout, parentL1Origin.L2BlockHash); err != nil {
+			return nil, false, err
+		}
+	}
+	transition, err := cli.TaikoL1.GetTransition(
+		&bind.CallOpts{Context: ctxWithTimeout},
+		id.Uint64(),
+		parent.Hash(),
+	)
+	if err != nil {
+		if !strings.Contains(encoding.TryParsingCustomError(err).Error(), "L1_TRANSITION_NOT_FOUND") {
+			return nil, false, encoding.TryParsingCustomError(err)
+		}
+
+		return nil, true, nil
+	}
+	fmt.Println("FUCK2")
+
+	l1Origin, err := cli.WaitL1Origin(ctxWithTimeout, id)
+	if err != nil {
+		return nil, false, err
+	}
+	fmt.Println("FUCK3")
+
+	if l1Origin.L2BlockHash != transition.BlockHash {
+		log.Info(
+			"Different blockhash detected, try submitting a proof",
+			"local", common.BytesToHash(l1Origin.L2BlockHash[:]),
+			"protocol", common.BytesToHash(transition.BlockHash[:]),
+		)
+		return nil, true, nil
+	}
+	return &transition, false, nil
 }
 
 // NeedNewProof checks whether the L2 block still needs a new proof.

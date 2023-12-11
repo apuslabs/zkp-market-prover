@@ -65,9 +65,9 @@ type ClientConfig struct {
 // NewClient initializes all RPC clients used by Taiko client softwares.
 func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 	//var apusRPCEndpoint = "http://1.117.58.173:8545"
-	//var apusMarketAddress = common.HexToAddress("0xaF2A7E5add08F35d463F3E52D70b86Fe7b74529C")
+	//var apusMarketAddress = common.HexToAddress("0xB2e47AC772F07b82965005Daad790BB471DC81A6")
 	var apusRPCEndpoint = "https://rpc.jolnir.taiko.xyz"
-	var apusMarketAddress = common.HexToAddress("0x6332856d390BA618faC75550bEE1814eD033666a")
+	var apusMarketAddress = common.HexToAddress("0xf534274b4279AB4639d55bCbFA6875A384c7A86c")
 	ctxWithTimeout, cancel := ctxWithTimeoutOrDefault(ctx, defaultTimeout)
 	defer cancel()
 

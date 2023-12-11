@@ -246,7 +246,7 @@ func (p *Prover) Start() error {
 	return nil
 }
 
-func (p *Prover) ScanApusTask() {
+func (p *Prover) ScanApusTask(ctx context.Context) {
 
 	ticker := time.NewTicker(10 * time.Second)
 
@@ -265,42 +265,128 @@ func (p *Prover) ScanApusTask() {
 				log.Error("Apus Market", "index", "scan apus task", "act", "get_latest_task_id", "error", err)
 				continue
 			}
-			latestTaskId := lid.Int64()
+			latestIndex := lid.Int64() - 1
 			newLatestVerifyTaskId := latestVerifiedTaskId.Int64()
 
 			// 检查 latestVerifiedTaskId ~ latestTaskId 之间的任务, 如果proveBlock, 执行submitTask, 如果verified, 发送奖励
-			for ;latestTaskId > latestVerifiedTaskId.Int64(); latestTaskId -- {
-				newLatestVerifyTaskId = latestTaskId
+			for taskIndex := newLatestVerifyTaskId; taskIndex >= newLatestVerifyTaskId && taskIndex <= latestIndex; taskIndex++ {
+
 				// 查看当前task
-				task, err := p.rpc.ApusTask.Tasks(&bind.CallOpts{}, big.NewInt(latestTaskId))
+				task, err := p.rpc.ApusTask.Tasks(&bind.CallOpts{}, big.NewInt(taskIndex))
 				if err != nil {
 					log.Error("Apus Market", "index", "scan apus task", "act", "tasks", "error", err)
 					continue
 				}
+				log.Info("Apus Market", "index", "scan apus task", "act", "start", "block_id", task.UniqID.String(), "status", task.Stat)
 
-				if task.Stat == 1 {
-					// 获取proof
-					event, _ := bindings.TaikoL1ClientBlockProposedFromBytes(task.Input)
-					output, _ := p.validProofSubmitter.RequestProof(context.Background(), event)
-					p.rpc.ApusTask.SubmitTask()
-					// 当前有没完成的
-					newLatestVerifyTaskId = task.Id
-
-				} else if task.Stat == 2 {
-					// 验证是不是已经verified 了
-					p.rpc.ApusTask.RewardTask()
+				// taskIndex 之前, 全都是已经验证过的, 且当前块儿也是验证过的， 所以latestverifiedtask 右移一位
+				if (task.Stat == 3 || task.Stat == 4) && (taskIndex == newLatestVerifyTaskId + 1 || taskIndex == newLatestVerifyTaskId) {
+					newLatestVerifyTaskId += 1
 				}
 
-				block, err := p.rpc.TaikoL1.GetBlock()
+				// 任务执行中
+				if task.Stat == 1 {
+					//block, err := p.rpc.TaikoL1.GetBlock(&bind.CallOpts{}, task.UniqID.Uint64())
+					//fmt.Println(block, err)
 
+					r, err := rpc.NeedNewProof(ctx, p.rpc, task.UniqID, p.proverAddress)
+					fmt.Println("FUCK", err, r)
+					transition, needNewProof, err := rpc.GetProofTransition(ctx, p.rpc, task.UniqID)
+					if err != nil {
+						log.Error("Apus Market", "index", "scan apus task", "act", "GetProofTransition", "uniqid", task.UniqID.String(), "error", err)
+						continue
+					}
+					// 说明还没提交
+					if needNewProof {
+						continue
+					}
+
+					// 提交了, 但是没拿到transaction, 异常
+					if transition == nil {
+						continue
+					}
+
+					tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+					if err != nil {
+						log.Error("Apus Market", "index", "scan apus task", "act", "get_tx_ops",  "uniqid", task.UniqID.String(), "error", err)
+						continue
+					}
+					tx.GasLimit = 3000000
+
+					var transTx *types.Transaction = nil
+					if transition.Prover == p.proverAddress {
+						// 自己提交的
+						transTx, err = p.rpc.ApusTask.SubmitTask(tx, 0, task.UniqID, []byte("verified"))
+					} else {
+						// 别人提交的
+						transTx, err = p.rpc.ApusTask.SlashTask(tx, 0, task.UniqID)
+					}
+					if err != nil {
+						log.Error("Apus Market", "index", "scan apus task", "act", "done_task", "is_slash", transition.Prover != p.proverAddress, "uniqid", task.UniqID.String(), "error", err)
+					}
+
+					log.Info("Apus Market", "index", "scan apus task", "act", "reward_task",  "uniqid", task.UniqID.String())
+					if _, err := rpc.WaitReceipt(ctx, p.rpc.Apus, transTx); err != nil {
+						log.Warn(
+							"Failed to wait till transaction executed",
+							"blockID", task.UniqID,
+							"txHash", transTx.Hash(),
+							"nonce", transTx.Nonce,
+							"error", err,
+						)
+						continue
+					}
+				}
+
+				if task.Stat == 2 {
+					isVerified, err := p.isBlockVerified(task.UniqID)
+					if err != nil {
+						log.Error("Apus Market", "index", "scan apus task", "act", "isVerified", "uniqid", task.UniqID.String(), "error", err)
+						continue
+					}
+					if !isVerified {
+						continue
+					}
+
+					t, client, err := p.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, task.UniqID)
+					if err != nil || client.Id.Int64() == 0 {
+						log.Error("Apus Market", "index", "scan apus task", "act", "get_task",  "uniqid", task.UniqID.String(), "error", err)
+						continue
+					}
+
+					tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+					if err != nil {
+						log.Error("Apus Market", "index", "scan apus task", "act", "get_tx_ops",  "uniqid", task.UniqID.String(), "error", err)
+						continue
+					}
+
+					tx.GasLimit = 300000
+
+					// 验证是不是已经verified 了
+					tx.Value = client.MinFee
+					transTX, err := p.rpc.ApusTask.RewardTask(tx, t.Id, client.MinFee, common.HexToAddress("0x0000000000000000000000000000000000000000"))
+					if err != nil {
+						log.Error("Apus Market", "index", "scan apus task", "act", "reward_task",  "uniqid", task.UniqID.String(), "error", err)
+						continue
+					}
+					log.Info("Apus Market", "index", "scan apus task", "act", "reward_task",  "uniqid", task.UniqID.String())
+					if _, err := rpc.WaitReceipt(ctx, p.rpc.Apus, transTX); err != nil {
+						log.Warn(
+							"Failed to wait till transaction executed",
+							"blockID", task.UniqID,
+							"txHash", transTX.Hash(),
+							"nonce", tx.Nonce,
+							"error", err,
+						)
+						continue
+					}
+				}
 			}
 
+			latestVerifiedTaskId = big.NewInt(newLatestVerifyTaskId)
 			log.Info("Apus Market", "index", "scan apus task", "act", "done")
 		}
 	}()
-}
-
-func (p *Prover) CheckApusTask() {
 }
 
 // eventLoop starts the main loop of Taiko prover.
@@ -309,6 +395,7 @@ func (p *Prover) eventLoop() {
 		p.wg.Done()
 	}()
 
+	go p.ScanApusTask(context.Background())
 	// reqProving requests performing a proving operation, won't block
 	// if we are already proving.
 	reqProving := func() {
@@ -401,6 +488,7 @@ func (p *Prover) proveOp() error {
 			TaikoL1:              p.rpc.TaikoL1,
 			StartHeight:          new(big.Int).SetUint64(p.l1Current.Number.Uint64()),
 			OnBlockProposedEvent: p.onBlockProposed,
+			FilterProver:         []common.Address{p.proverAddress},
 		})
 		if err != nil {
 			return err
@@ -426,6 +514,8 @@ func (p *Prover) onBlockProposed(
 		}
 		return nil
 	}
+
+	log.Info("OnBlockProposed", "block_id", event.BlockId, "prover", event.Prover)
 
 	task, _, err := p.rpc.ApusTask.GetTask(&bind.CallOpts{}, 0, event.BlockId)
 	if err != nil {
@@ -589,20 +679,6 @@ func (p *Prover) onBlockProposed(
 		}
 
 		if !needNewProof {
-			if task.Stat == 1 {
-				tx, terr := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
-				if terr != nil {
-					log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
-					return nil
-				}
-
-				_, err := p.rpc.ApusTask.SubmitTask(tx, 0, event.BlockId, []byte("already prove"))
-				if err != nil {
-					log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
-				} else {
-					log.Info("Apus Market: ", "index", "submitTask", "block_id", event.BlockId)
-				}
-			}
 			return nil
 		}
 
@@ -973,8 +1049,8 @@ func (p *Prover) isBlockVerified(id *big.Int) (bool, error) {
 
 // initSubscription initializes all subscriptions in current prover instance.
 func (p *Prover) initSubscription() {
-	p.blockProposedSub = rpc.SubscribeBlockProposed(p.rpc.TaikoL1, p.blockProposedCh)
-	p.blockVerifiedSub = rpc.SubscribeBlockVerified(p.rpc.TaikoL1, p.blockVerifiedCh)
+	p.blockProposedSub = rpc.SubscribeBlockProposed(p.rpc.TaikoL1, p.blockProposedCh, []common.Address{p.proverAddress})
+	p.blockVerifiedSub = rpc.SubscribeBlockVerified(p.rpc.TaikoL1, p.blockVerifiedCh, []common.Address{p.proverAddress})
 	p.blockProvenSub = rpc.SubscribeBlockProven(p.rpc.TaikoL1, p.blockProvenCh)
 }
 

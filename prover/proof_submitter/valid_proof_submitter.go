@@ -271,9 +271,9 @@ func (s *ValidProofSubmitter) SubmitProof(
 		}
 		//gasPrice, _ := s.rpc.Apus.SuggestGasPrice(ctx)
 		//apusTxOpts.GasPrice = gasPrice
-		//apusTxOpts.GasLimit = 8000000
+		apusTxOpts.GasLimit = 300000
 
-		tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, input)
+		tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, []byte("submit apus task"))
 		if err != nil {
 			log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
 		} else {

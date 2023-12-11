@@ -3,6 +3,7 @@ package eventiterator
 import (
 	"context"
 	"errors"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -41,6 +42,7 @@ type BlockProposedIteratorConfig struct {
 	StartHeight           *big.Int
 	EndHeight             *big.Int
 	FilterQuery           []*big.Int
+	FilterProver          []common.Address
 	Reverse               bool
 	OnBlockProposedEvent  OnBlockProposedEvent
 }
@@ -70,6 +72,7 @@ func NewBlockProposedIterator(ctx context.Context, cfg *BlockProposedIteratorCon
 			cfg.FilterQuery,
 			cfg.OnBlockProposedEvent,
 			iterator,
+			cfg.FilterProver,
 		),
 	})
 	if err != nil {
@@ -100,6 +103,7 @@ func assembleBlockProposedIteratorCallback(
 	filterQuery []*big.Int,
 	callback OnBlockProposedEvent,
 	eventIter *BlockProposedIterator,
+	filterProver []common.Address,
 ) chainIterator.OnBlocksFunc {
 	return func(
 		ctx context.Context,
@@ -111,7 +115,7 @@ func assembleBlockProposedIteratorCallback(
 		iter, err := taikoL1Client.FilterBlockProposed(
 			&bind.FilterOpts{Start: start.Number.Uint64(), End: &endHeight, Context: ctx},
 			filterQuery,
-			nil,
+			filterProver,
 		)
 		if err != nil {
 			return err
