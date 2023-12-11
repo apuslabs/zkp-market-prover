@@ -10,6 +10,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -222,6 +223,57 @@ func (p *ZkevmRpcdProducer) callProverDaemon(ctx context.Context, opts *ProofReq
 		return nil, 0, err
 	}
 	return proof, degree, nil
+}
+
+func CheckRpcdProducer(url string) (bool, error) {
+
+	reqBody := RequestProofBody{
+		JsonRPC: "2.0",
+		ID:      common.Big1,
+		Method:  "proof",
+		Params: []*RequestProofBodyParam{{
+			Circuit:      "super",
+			Retry:        true,
+			VerifyProof:  true,
+			Mock:         false,
+			MockFeedback: false,
+			Aggregate:    true,
+		}},
+	}
+
+	jsonValue, err := json.Marshal(reqBody)
+	if err != nil {
+		return false, err
+	}
+
+	log.Info("ApusMarket", "index", "requestProof-check", "url", url)
+	res, err := http.Post(url, "application/json", bytes.NewBuffer(jsonValue))
+
+
+
+	if err != nil {
+		if strings.Contains(err.Error(), "i/o timeout") || strings.Contains(err.Error(), "no such host"){
+			return false, nil
+		}
+		return false, err
+	}
+
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return false, nil
+	}
+
+	resBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return false, err
+	}
+
+	var output RequestProofBodyResponse
+	if err := json.Unmarshal(resBytes, &output); err != nil {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // requestProof sends a RPC request to proverd to try to get the requested proof.

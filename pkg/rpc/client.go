@@ -39,6 +39,7 @@ type Client struct {
 	TaikoL2    *bindings.TaikoL2Client
 	TaikoToken *bindings.TaikoToken
 	ApusTask *bindings.ApusTask
+	ApusMarket *bindings.ApusMarket
 	// Chain IDs
 	L1ChainID *big.Int
 	L2ChainID *big.Int
@@ -67,7 +68,8 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 	//var apusRPCEndpoint = "http://1.117.58.173:8545"
 	//var apusMarketAddress = common.HexToAddress("0xB2e47AC772F07b82965005Daad790BB471DC81A6")
 	var apusRPCEndpoint = "https://rpc.jolnir.taiko.xyz"
-	var apusMarketAddress = common.HexToAddress("0xf534274b4279AB4639d55bCbFA6875A384c7A86c")
+	var apusMarketAddress = common.HexToAddress("0xD1bA4979ca39154E79D2Fa7676AACc7E6367DB24")
+	var apusTasktAddress = common.HexToAddress("0xf534274b4279AB4639d55bCbFA6875A384c7A86c")
 	ctxWithTimeout, cancel := ctxWithTimeoutOrDefault(ctx, defaultTimeout)
 	defer cancel()
 
@@ -115,7 +117,12 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	apusTask, err := bindings.NewApusTask(apusMarketAddress, apusRPC)
+	apusTask, err := bindings.NewApusTask(apusTasktAddress, apusRPC)
+	if err != nil {
+		return nil, err
+	}
+
+	apusMarket, err := bindings.NewApusMarket(apusMarketAddress, apusRPC)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +219,7 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 		L2CheckPoint: l2CheckPoint,
 		L1RawRPC:     l1RawRPC,
 		L2RawRPC:     l2RawRPC,
-		ApusRawRPC: apusRawRPC,
+		ApusRawRPC:   apusRawRPC,
 		L1GethClient: gethclient.New(l1RawRPC),
 		L2GethClient: gethclient.New(l2RawRPC),
 		ApusGethClient: gethclient.New(apusRawRPC),
@@ -220,7 +227,8 @@ func NewClient(ctx context.Context, cfg *ClientConfig) (*Client, error) {
 		TaikoL1:      taikoL1,
 		TaikoL2:      taikoL2,
 		TaikoToken:   taikoToken,
-		ApusTask: 	apusTask,
+		ApusTask: 	  apusTask,
+		ApusMarket:   apusMarket,
 		L1ChainID:    l1ChainID,
 		L2ChainID:    l2ChainID,
 		ApusChainID: apusChainID,

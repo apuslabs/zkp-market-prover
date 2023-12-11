@@ -246,7 +246,48 @@ func (p *Prover) Start() error {
 	return nil
 }
 
-func (p *Prover) ScanApusTask(ctx context.Context) {
+func (p *Prover) CleanExpiredClient(ctx context.Context) {
+
+	// 执行定时任务的逻辑
+	log.Info("Apus Market", "index", "clean expired client", "act", "start")
+	// 在这里编写你的定时任务代码
+	var i int64 = 0
+	for ; ; i++ {
+		client, err := p.rpc.ApusMarket.Clients(&bind.CallOpts{}, big.NewInt(i))
+		if err != nil {
+			log.Error("Apus Market", "index", "clean expired client", "id", i, "err", err)
+			break
+		}
+
+		if client.Stat != 0 {
+			continue
+		}
+
+		// 测试是否还在正常运行
+		pass, err := proofProducer.CheckRpcdProducer(client.Url)
+		if err != nil {
+			log.Error("Apus Market", "index", "clean expired client", "check_rpcd_err", err)
+			continue
+		}
+		log.Info("Apus Market", "index", "clean expired client", "check_rpcd", pass)
+		if !pass {
+			tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
+			if err != nil {
+				continue
+			}
+			tx.GasLimit = 3000000
+			txRet, err := p.rpc.ApusMarket.OfflineClient(tx, client.Owner, client.Id)
+			if err != nil {
+				log.Error("Apus Market", "index", "clean expired client", "id", i, "tx", txRet, "err", err)
+				continue
+			}
+			log.Info("Apus Market", "index", "clean expired client", "offline_client", i)
+
+		}
+	}
+}
+
+func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 
 	ticker := time.NewTicker(10 * time.Second)
 
@@ -257,6 +298,7 @@ func (p *Prover) ScanApusTask(ctx context.Context) {
 			// 等待定时器触发
 			<-ticker.C
 
+			p.CleanExpiredClient(ctx)
 			// 执行定时任务的逻辑
 			log.Info("Apus Market", "index", "scan apus task", "act", "start")
 			// 在这里编写你的定时任务代码
@@ -395,7 +437,7 @@ func (p *Prover) eventLoop() {
 		p.wg.Done()
 	}()
 
-	go p.ScanApusTask(context.Background())
+	go p.ScanApusTaskAndCleanExpiredClient(context.Background())
 	// reqProving requests performing a proving operation, won't block
 	// if we are already proving.
 	reqProving := func() {
