@@ -321,6 +321,10 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 				}
 				log.Info("Apus Market", "index", "scan apus task", "act", "start", "block_id", task.UniqID.String(), "status", task.Stat)
 
+				if task.UniqID.Uint64() <= 1486673 {
+					task.Stat = 3
+				}
+
 				// taskIndex 之前, 全都是已经验证过的, 且当前块儿也是验证过的， 所以latestverifiedtask 右移一位
 				if (task.Stat == 3 || task.Stat == 4) && (taskIndex == newLatestVerifyTaskId + 1 || taskIndex == newLatestVerifyTaskId) {
 					newLatestVerifyTaskId += 1
