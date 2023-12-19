@@ -273,7 +273,10 @@ func CheckRpcdProducer(url string) (bool, error) {
 		return false, nil
 	}
 
-	return true, nil
+	if strings.Contains(output.Error.Message, "invalid type: null, expected u64") {
+		return true, nil
+	}
+	return false, nil
 }
 
 // requestProof sends a RPC request to proverd to try to get the requested proof.

@@ -255,7 +255,7 @@ func (p *Prover) CleanExpiredClient(ctx context.Context) {
 	for ; ; i++ {
 		client, err := p.rpc.ApusMarket.Clients(&bind.CallOpts{}, big.NewInt(i))
 		if err != nil {
-			log.Error("Apus Market", "index", "clean expired client", "id", i, "err", err)
+			//log.Error("Apus Market", "index", "clean expired client", "id", i, "err", err)
 			break
 		}
 
@@ -267,7 +267,7 @@ func (p *Prover) CleanExpiredClient(ctx context.Context) {
 		pass, err := proofProducer.CheckRpcdProducer(client.Url)
 		if err != nil {
 			log.Error("Apus Market", "index", "clean expired client", "check_rpcd_err", err)
-			continue
+			pass = false
 		}
 		log.Info("Apus Market", "index", "clean expired client", "check_rpcd", pass)
 		if !pass {
@@ -293,7 +293,7 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 
 	// 启动一个 goroutine 来扫描task任务
 	go func() {
-		latestVerifiedTaskId := big.NewInt(0)
+		latestVerifiedTaskId := big.NewInt(300)
 		for {
 			// 等待定时器触发
 			<-ticker.C
@@ -332,11 +332,6 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 
 				// 任务执行中
 				if task.Stat == 1 {
-					//block, err := p.rpc.TaikoL1.GetBlock(&bind.CallOpts{}, task.UniqID.Uint64())
-					//fmt.Println(block, err)
-
-					r, err := rpc.NeedNewProof(ctx, p.rpc, task.UniqID, p.proverAddress)
-					fmt.Println("FUCK", err, r)
 					transition, needNewProof, err := rpc.GetProofTransition(ctx, p.rpc, task.UniqID)
 					if err != nil {
 						log.Error("Apus Market", "index", "scan apus task", "act", "GetProofTransition", "uniqid", task.UniqID.String(), "error", err)
@@ -371,7 +366,7 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 						log.Error("Apus Market", "index", "scan apus task", "act", "done_task", "is_slash", transition.Prover != p.proverAddress, "uniqid", task.UniqID.String(), "error", err)
 					}
 
-					log.Info("Apus Market", "index", "scan apus task", "act", "reward_task",  "uniqid", task.UniqID.String())
+					log.Info("Apus Market", "index", "scan apus task", "reward_task", transition.Prover == p.proverAddress ,  "uniqid", task.UniqID.String())
 					if _, err := rpc.WaitReceipt(ctx, p.rpc.Apus, transTx); err != nil {
 						log.Warn(
 							"Failed to wait till transaction executed",
@@ -442,6 +437,8 @@ func (p *Prover) eventLoop() {
 	}()
 
 	go p.ScanApusTaskAndCleanExpiredClient(context.Background())
+//}
+//func (p *Prover) eventLoop2() {
 	// reqProving requests performing a proving operation, won't block
 	// if we are already proving.
 	reqProving := func() {
@@ -885,7 +882,6 @@ func (p *Prover) onBlockProposed(
 				return err
 			}
 
-			tx.GasLimit = 1000000
 			txr, err := p.rpc.ApusTask.DispatchTaskToClient(tx, event.BlockId)
 			if  err != nil {
 				log.Error("Apus Market: faild to dispatch task to client", "block_id", event.BlockId, "error", err)
@@ -898,7 +894,7 @@ func (p *Prover) onBlockProposed(
 
 			if _, err := rpc.WaitReceipt(ctxWithTimeout, p.rpc.Apus, txr); err != nil {
 				log.Warn(
-					"Failed to wait till transaction executed",
+					"Failed to wait till transaction executed dispatch client",
 					"blockID", event.BlockId,
 					"txHash", txr.Hash(),
 					"nonce", nonce,
