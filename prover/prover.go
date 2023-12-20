@@ -293,7 +293,7 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 
 	// 启动一个 goroutine 来扫描task任务
 	go func() {
-		latestVerifiedTaskId := big.NewInt(300)
+		latestVerifiedTaskId := big.NewInt(432)
 		for {
 			// 等待定时器触发
 			<-ticker.C
@@ -320,10 +320,6 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 					continue
 				}
 				log.Info("Apus Market", "index", "scan apus task", "act", "start", "block_id", task.UniqID.String(), "status", task.Stat)
-
-				if task.UniqID.Uint64() <= 1486673 {
-					task.Stat = 3
-				}
 
 				// taskIndex 之前, 全都是已经验证过的, 且当前块儿也是验证过的， 所以latestverifiedtask 右移一位
 				if (task.Stat == 3 || task.Stat == 4) && (taskIndex == newLatestVerifyTaskId + 1 || taskIndex == newLatestVerifyTaskId) {
