@@ -263,24 +263,24 @@ func (s *ValidProofSubmitter) SubmitProof(
 		return fmt.Errorf("failed to encode TaikoL1.proveBlock inputs: %w", err)
 	}
 
-	submitApusTask := func() {
-		apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
-		if terr != nil {
-			log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
-			return
-		}
-		//gasPrice, _ := s.rpc.Apus.SuggestGasPrice(ctx)
-		//apusTxOpts.GasPrice = gasPrice
-		apusTxOpts.GasLimit = 300000
-
-		tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, []byte("submit apus task"))
-		if err != nil {
-			log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
-		} else {
-			log.Info("Apus Market: ", "index", "submitTask", "block_id", proofWithHeader.BlockID)
-		}
-	}
-	submitApusTask()
+	//submitApusTask := func() {
+	//	apusTxOpts, terr := getProveBlocksTxOpts(ctx, s.rpc.Apus, s.rpc.ApusChainID, s.proverPrivKey)
+	//	if terr != nil {
+	//		log.Error("Apus Market: ", "index", "apusTxOpts", "error", terr)
+	//		return
+	//	}
+	//	//gasPrice, _ := s.rpc.Apus.SuggestGasPrice(ctx)
+	//	//apusTxOpts.GasPrice = gasPrice
+	//	apusTxOpts.GasLimit = 300000
+	//
+	//	tx, err := s.rpc.ApusTask.SubmitTask(apusTxOpts, 0, proofWithHeader.BlockID, []byte("submit apus task"))
+	//	if err != nil {
+	//		log.Error("Apus Market: ", "index", "submitTask", "transaction", tx, "error", err)
+	//	} else {
+	//		log.Info("Apus Market: ", "index", "submitTask", "block_id", proofWithHeader.BlockID)
+	//	}
+	//}
+	//submitApusTask()
 
 	input, err = encoding.EncodeProveBlockInput(evidence)
 	if err != nil {

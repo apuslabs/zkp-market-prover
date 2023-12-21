@@ -164,13 +164,11 @@ func GetProofTransition (
 
 		return nil, true, nil
 	}
-	fmt.Println("FUCK2")
 
 	l1Origin, err := cli.WaitL1Origin(ctxWithTimeout, id)
 	if err != nil {
 		return nil, false, err
 	}
-	fmt.Println("FUCK3")
 
 	if l1Origin.L2BlockHash != transition.BlockHash {
 		log.Info(

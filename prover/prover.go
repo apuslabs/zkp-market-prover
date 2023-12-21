@@ -293,7 +293,7 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 
 	// 启动一个 goroutine 来扫描task任务
 	go func() {
-		latestVerifiedTaskId := big.NewInt(432)
+		latestVerifiedTaskId := big.NewInt(500)
 		for {
 			// 等待定时器触发
 			<-ticker.C
@@ -348,7 +348,7 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 						log.Error("Apus Market", "index", "scan apus task", "act", "get_tx_ops",  "uniqid", task.UniqID.String(), "error", err)
 						continue
 					}
-					tx.GasLimit = 3000000
+					//tx.GasLimit = 30000000
 
 					var transTx *types.Transaction = nil
 					if transition.Prover == p.proverAddress {
@@ -572,7 +572,7 @@ func (p *Prover) onBlockProposed(
 			log.Error("Apus Market: onBlockProposed", "index", "event.ToBytes", "err", err)
 			return err
 		}
-		tx.GasLimit = 3000000
+		//tx.GasLimit = 3000000
 
 		txr, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, 10000, bindings.ApusDatarewardInfo{Token: p.proverAddress, Amount: big.NewInt(10)})
 		if derr != nil  {
