@@ -293,7 +293,7 @@ func (p *Prover) ScanApusTaskAndCleanExpiredClient(ctx context.Context) {
 
 	// 启动一个 goroutine 来扫描task任务
 	go func() {
-		latestVerifiedTaskId := big.NewInt(500)
+		latestVerifiedTaskId := big.NewInt(0)
 		for {
 			// 等待定时器触发
 			<-ticker.C
@@ -561,7 +561,7 @@ func (p *Prover) onBlockProposed(
 		log.Error("Apus Market: onBlockProposed", "index", "get_task", "err", err)
 		return err
 	}
-	if task.Id.Int64() <= 0 {
+	if task.Id.Uint64() <= 0 {
 		tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
 		if err != nil {
 			log.Error("Apus Market: onBlockProposed", "index", "getTxOps", "err", err)
@@ -572,7 +572,7 @@ func (p *Prover) onBlockProposed(
 			log.Error("Apus Market: onBlockProposed", "index", "event.ToBytes", "err", err)
 			return err
 		}
-		//tx.GasLimit = 3000000
+		tx.GasLimit = 3000000
 
 		txr, derr := p.rpc.ApusTask.PostTask(tx, 0, event.BlockId, input, 10000, bindings.ApusDatarewardInfo{Token: p.proverAddress, Amount: big.NewInt(10)})
 		if derr != nil  {
@@ -586,9 +586,9 @@ func (p *Prover) onBlockProposed(
 
 		if _, err := rpc.WaitReceipt(ctxWithTimeout, p.rpc.Apus, txr); err != nil {
 			log.Warn(
-				"Failed to wait till transaction executed",
+				"Failed to wait till transaction executed post task",
 				"blockID", event.BlockId,
-				"txHash", txr.Hash(),
+				"txHash", txr.Hash().String(),
 				"nonce", nonce,
 				"error", err,
 			)
@@ -871,13 +871,16 @@ func (p *Prover) onBlockProposed(
 		}
 
 		// 如果task还没有指定 client机器
-		if taskInfo.Stat == 0 || taskInfo.ClientId.Int64() <= 0 {
+		if taskInfo.Stat == 0  {
 			tx, err := getTxOpts(ctx, p.rpc.Apus, p.cfg.L1ProverPrivKey, p.rpc.ApusChainID)
 			if err != nil {
 				log.Error("Apus Market: onBlockProposed:DispatchTaskToClient", "index", "getTxOps", "err", err)
 				return err
 			}
 
+			fmt.Println(taskInfo.Id.Uint64())
+
+			tx.GasLimit = 3000000
 			txr, err := p.rpc.ApusTask.DispatchTaskToClient(tx, event.BlockId)
 			if  err != nil {
 				log.Error("Apus Market: faild to dispatch task to client", "block_id", event.BlockId, "error", err)
@@ -895,6 +898,8 @@ func (p *Prover) onBlockProposed(
 					"txHash", txr.Hash(),
 					"nonce", nonce,
 					"error", err,
+					"stat", taskInfo.Stat,
+					"client_id", taskInfo.ClientId.String(),
 				)
 				return err
 			}

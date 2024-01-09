@@ -64,7 +64,7 @@ type ApusDatarewardInfo struct {
 
 // ApusTaskMetaData contains all meta data concerning the ApusTask contract.
 var ApusTaskMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_marketAddr\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddr\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"eventPostTask\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"tasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"numDays\",\"type\":\"uint256\"}],\"name\":\"getDailyTaskCount\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"getTaskCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"getAssignedTaskCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"getLatestTaskId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"getAvgReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"getAvgProofTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"prover\",\"type\":\"address\"}],\"name\":\"getProverTasks\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.Task[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"prover\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"}],\"name\":\"getClientTasks\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.Task[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"}],\"name\":\"slashTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"}],\"name\":\"submitTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"}],\"name\":\"getTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.Task\",\"name\":\"\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"minFee\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"maxZkEvmInstance\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"curInstance\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.ClientStatus\",\"name\":\"stat\",\"type\":\"uint8\"}],\"internalType\":\"structApusData.ClientConfig\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"ri\",\"type\":\"tuple\"}],\"name\":\"postTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskID\",\"type\":\"uint256\"}],\"name\":\"dispatchTaskToClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_taskID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"rewardTask\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\",\"payable\":true},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskID\",\"type\":\"uint256\"}],\"name\":\"assignTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"hasResource\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_marketAddr\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddr\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"}],\"name\":\"dispatchTaskToClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"taskType\",\"type\":\"uint8\"}],\"name\":\"isTaskIndexExists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"market\",\"outputs\":[{\"internalType\":\"contractMarket\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"ri\",\"type\":\"tuple\"}],\"name\":\"postTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_taskID\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"rewardTask\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"taskType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setTaskIndex\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"}],\"name\":\"slashTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"}],\"name\":\"submitTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"tasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"token\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"numDays\",\"type\":\"uint256\"}],\"name\":\"getDailyTaskCount\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTaskCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAssignedTaskCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestTaskId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvgReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvgProofTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"prover\",\"type\":\"address\"}],\"name\":\"getProverTasks\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.Task[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"prover\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"}],\"name\":\"getClientTasks\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.Task[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"}],\"name\":\"getTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"clientId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"uniqID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"assigner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\"},{\"internalType\":\"enumApusData.TaskType\",\"name\":\"_tp\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.TaskStatus\",\"name\":\"_stat\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.rewardInfo\",\"name\":\"reward\",\"type\":\"tuple\"},{\"internalType\":\"uint64\",\"name\":\"expiry\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"assignTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proveTime\",\"type\":\"uint256\"}],\"internalType\":\"structApusData.Task\",\"name\":\"\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"minFee\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"maxZkEvmInstance\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"curInstance\",\"type\":\"uint8\"},{\"internalType\":\"enumApusData.ClientStatus\",\"name\":\"stat\",\"type\":\"uint8\"}],\"internalType\":\"structApusData.ClientConfig\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"hasResource\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // ApusTaskABI is the input ABI used to generate the binding from.
@@ -524,6 +524,69 @@ func (_ApusTask *ApusTaskCallerSession) HasResource() (*big.Int, error) {
 	return _ApusTask.Contract.HasResource(&_ApusTask.CallOpts)
 }
 
+// IsTaskIndexExists is a free data retrieval call binding the contract method 0xfbd49de7.
+//
+// Solidity: function isTaskIndexExists(uint256 id, uint8 taskType) view returns(bool, uint256)
+func (_ApusTask *ApusTaskCaller) IsTaskIndexExists(opts *bind.CallOpts, id *big.Int, taskType uint8) (bool, *big.Int, error) {
+	var out []interface{}
+	err := _ApusTask.contract.Call(opts, &out, "isTaskIndexExists", id, taskType)
+
+	if err != nil {
+		return *new(bool), *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+	out1 := *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+
+	return out0, out1, err
+
+}
+
+// IsTaskIndexExists is a free data retrieval call binding the contract method 0xfbd49de7.
+//
+// Solidity: function isTaskIndexExists(uint256 id, uint8 taskType) view returns(bool, uint256)
+func (_ApusTask *ApusTaskSession) IsTaskIndexExists(id *big.Int, taskType uint8) (bool, *big.Int, error) {
+	return _ApusTask.Contract.IsTaskIndexExists(&_ApusTask.CallOpts, id, taskType)
+}
+
+// IsTaskIndexExists is a free data retrieval call binding the contract method 0xfbd49de7.
+//
+// Solidity: function isTaskIndexExists(uint256 id, uint8 taskType) view returns(bool, uint256)
+func (_ApusTask *ApusTaskCallerSession) IsTaskIndexExists(id *big.Int, taskType uint8) (bool, *big.Int, error) {
+	return _ApusTask.Contract.IsTaskIndexExists(&_ApusTask.CallOpts, id, taskType)
+}
+
+// Market is a free data retrieval call binding the contract method 0x80f55605.
+//
+// Solidity: function market() view returns(address)
+func (_ApusTask *ApusTaskCaller) Market(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _ApusTask.contract.Call(opts, &out, "market")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// Market is a free data retrieval call binding the contract method 0x80f55605.
+//
+// Solidity: function market() view returns(address)
+func (_ApusTask *ApusTaskSession) Market() (common.Address, error) {
+	return _ApusTask.Contract.Market(&_ApusTask.CallOpts)
+}
+
+// Market is a free data retrieval call binding the contract method 0x80f55605.
+//
+// Solidity: function market() view returns(address)
+func (_ApusTask *ApusTaskCallerSession) Market() (common.Address, error) {
+	return _ApusTask.Contract.Market(&_ApusTask.CallOpts)
+}
+
 // Tasks is a free data retrieval call binding the contract method 0x8d977672.
 //
 // Solidity: function tasks(uint256 ) view returns(uint256 id, uint256 clientId, uint256 uniqID, address assigner, bytes input, uint8 _tp, uint8 _stat, bytes result, (address,uint256) reward, uint64 expiry, uint256 assignTime, uint256 proveTime)
@@ -619,46 +682,56 @@ func (_ApusTask *ApusTaskCallerSession) Tasks(arg0 *big.Int) (struct {
 	return _ApusTask.Contract.Tasks(&_ApusTask.CallOpts, arg0)
 }
 
-// AssignTask is a paid mutator transaction binding the contract method 0xb8573185.
+// Token is a free data retrieval call binding the contract method 0xfc0c546a.
 //
-// Solidity: function assignTask(uint256 taskID) returns()
-func (_ApusTask *ApusTaskTransactor) AssignTask(opts *bind.TransactOpts, taskID *big.Int) (*types.Transaction, error) {
-	return _ApusTask.contract.Transact(opts, "assignTask", taskID)
+// Solidity: function token() view returns(address)
+func (_ApusTask *ApusTaskCaller) Token(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _ApusTask.contract.Call(opts, &out, "token")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
-// AssignTask is a paid mutator transaction binding the contract method 0xb8573185.
+// Token is a free data retrieval call binding the contract method 0xfc0c546a.
 //
-// Solidity: function assignTask(uint256 taskID) returns()
-func (_ApusTask *ApusTaskSession) AssignTask(taskID *big.Int) (*types.Transaction, error) {
-	return _ApusTask.Contract.AssignTask(&_ApusTask.TransactOpts, taskID)
+// Solidity: function token() view returns(address)
+func (_ApusTask *ApusTaskSession) Token() (common.Address, error) {
+	return _ApusTask.Contract.Token(&_ApusTask.CallOpts)
 }
 
-// AssignTask is a paid mutator transaction binding the contract method 0xb8573185.
+// Token is a free data retrieval call binding the contract method 0xfc0c546a.
 //
-// Solidity: function assignTask(uint256 taskID) returns()
-func (_ApusTask *ApusTaskTransactorSession) AssignTask(taskID *big.Int) (*types.Transaction, error) {
-	return _ApusTask.Contract.AssignTask(&_ApusTask.TransactOpts, taskID)
-}
-
-// DispatchTaskToClient is a paid mutator transaction binding the contract method 0xe5ab75eb.
-//
-// Solidity: function dispatchTaskToClient(uint256 taskID) returns()
-func (_ApusTask *ApusTaskTransactor) DispatchTaskToClient(opts *bind.TransactOpts, taskID *big.Int) (*types.Transaction, error) {
-	return _ApusTask.contract.Transact(opts, "dispatchTaskToClient", taskID)
-}
-
-// DispatchTaskToClient is a paid mutator transaction binding the contract method 0xe5ab75eb.
-//
-// Solidity: function dispatchTaskToClient(uint256 taskID) returns()
-func (_ApusTask *ApusTaskSession) DispatchTaskToClient(taskID *big.Int) (*types.Transaction, error) {
-	return _ApusTask.Contract.DispatchTaskToClient(&_ApusTask.TransactOpts, taskID)
+// Solidity: function token() view returns(address)
+func (_ApusTask *ApusTaskCallerSession) Token() (common.Address, error) {
+	return _ApusTask.Contract.Token(&_ApusTask.CallOpts)
 }
 
 // DispatchTaskToClient is a paid mutator transaction binding the contract method 0xe5ab75eb.
 //
-// Solidity: function dispatchTaskToClient(uint256 taskID) returns()
-func (_ApusTask *ApusTaskTransactorSession) DispatchTaskToClient(taskID *big.Int) (*types.Transaction, error) {
-	return _ApusTask.Contract.DispatchTaskToClient(&_ApusTask.TransactOpts, taskID)
+// Solidity: function dispatchTaskToClient(uint256 uniqID) returns()
+func (_ApusTask *ApusTaskTransactor) DispatchTaskToClient(opts *bind.TransactOpts, uniqID *big.Int) (*types.Transaction, error) {
+	return _ApusTask.contract.Transact(opts, "dispatchTaskToClient", uniqID)
+}
+
+// DispatchTaskToClient is a paid mutator transaction binding the contract method 0xe5ab75eb.
+//
+// Solidity: function dispatchTaskToClient(uint256 uniqID) returns()
+func (_ApusTask *ApusTaskSession) DispatchTaskToClient(uniqID *big.Int) (*types.Transaction, error) {
+	return _ApusTask.Contract.DispatchTaskToClient(&_ApusTask.TransactOpts, uniqID)
+}
+
+// DispatchTaskToClient is a paid mutator transaction binding the contract method 0xe5ab75eb.
+//
+// Solidity: function dispatchTaskToClient(uint256 uniqID) returns()
+func (_ApusTask *ApusTaskTransactorSession) DispatchTaskToClient(uniqID *big.Int) (*types.Transaction, error) {
+	return _ApusTask.Contract.DispatchTaskToClient(&_ApusTask.TransactOpts, uniqID)
 }
 
 // PostTask is a paid mutator transaction binding the contract method 0x02feed60.
@@ -703,6 +776,27 @@ func (_ApusTask *ApusTaskTransactorSession) RewardTask(_taskID *big.Int, amount 
 	return _ApusTask.Contract.RewardTask(&_ApusTask.TransactOpts, _taskID, amount, _tokenAddress)
 }
 
+// SetTaskIndex is a paid mutator transaction binding the contract method 0x78d147af.
+//
+// Solidity: function setTaskIndex(uint256 id, uint8 taskType, uint256 value) returns()
+func (_ApusTask *ApusTaskTransactor) SetTaskIndex(opts *bind.TransactOpts, id *big.Int, taskType uint8, value *big.Int) (*types.Transaction, error) {
+	return _ApusTask.contract.Transact(opts, "setTaskIndex", id, taskType, value)
+}
+
+// SetTaskIndex is a paid mutator transaction binding the contract method 0x78d147af.
+//
+// Solidity: function setTaskIndex(uint256 id, uint8 taskType, uint256 value) returns()
+func (_ApusTask *ApusTaskSession) SetTaskIndex(id *big.Int, taskType uint8, value *big.Int) (*types.Transaction, error) {
+	return _ApusTask.Contract.SetTaskIndex(&_ApusTask.TransactOpts, id, taskType, value)
+}
+
+// SetTaskIndex is a paid mutator transaction binding the contract method 0x78d147af.
+//
+// Solidity: function setTaskIndex(uint256 id, uint8 taskType, uint256 value) returns()
+func (_ApusTask *ApusTaskTransactorSession) SetTaskIndex(id *big.Int, taskType uint8, value *big.Int) (*types.Transaction, error) {
+	return _ApusTask.Contract.SetTaskIndex(&_ApusTask.TransactOpts, id, taskType, value)
+}
+
 // SlashTask is a paid mutator transaction binding the contract method 0x0a363d2d.
 //
 // Solidity: function slashTask(uint8 _tp, uint256 uniqID) returns()
@@ -743,140 +837,4 @@ func (_ApusTask *ApusTaskSession) SubmitTask(_tp uint8, uniqID *big.Int, result 
 // Solidity: function submitTask(uint8 _tp, uint256 uniqID, bytes result) returns()
 func (_ApusTask *ApusTaskTransactorSession) SubmitTask(_tp uint8, uniqID *big.Int, result []byte) (*types.Transaction, error) {
 	return _ApusTask.Contract.SubmitTask(&_ApusTask.TransactOpts, _tp, uniqID, result)
-}
-
-// ApusTaskEventPostTaskIterator is returned from FilterEventPostTask and is used to iterate over the raw logs and unpacked data for EventPostTask events raised by the ApusTask contract.
-type ApusTaskEventPostTaskIterator struct {
-	Event *ApusTaskEventPostTask // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ApusTaskEventPostTaskIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ApusTaskEventPostTask)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ApusTaskEventPostTask)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ApusTaskEventPostTaskIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ApusTaskEventPostTaskIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ApusTaskEventPostTask represents a EventPostTask event raised by the ApusTask contract.
-type ApusTaskEventPostTask struct {
-	Tp     uint8
-	TaskId *big.Int
-	Data   []byte
-	Raw    types.Log // Blockchain specific contextual infos
-}
-
-// FilterEventPostTask is a free log retrieval operation binding the contract event 0x35704b548ce3d9c6b66133486dab71a856aad8bd22d9907819c063852f610a6f.
-//
-// Solidity: event eventPostTask(uint8 _tp, uint256 taskId, bytes data)
-func (_ApusTask *ApusTaskFilterer) FilterEventPostTask(opts *bind.FilterOpts) (*ApusTaskEventPostTaskIterator, error) {
-
-	logs, sub, err := _ApusTask.contract.FilterLogs(opts, "eventPostTask")
-	if err != nil {
-		return nil, err
-	}
-	return &ApusTaskEventPostTaskIterator{contract: _ApusTask.contract, event: "eventPostTask", logs: logs, sub: sub}, nil
-}
-
-// WatchEventPostTask is a free log subscription operation binding the contract event 0x35704b548ce3d9c6b66133486dab71a856aad8bd22d9907819c063852f610a6f.
-//
-// Solidity: event eventPostTask(uint8 _tp, uint256 taskId, bytes data)
-func (_ApusTask *ApusTaskFilterer) WatchEventPostTask(opts *bind.WatchOpts, sink chan<- *ApusTaskEventPostTask) (event.Subscription, error) {
-
-	logs, sub, err := _ApusTask.contract.WatchLogs(opts, "eventPostTask")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ApusTaskEventPostTask)
-				if err := _ApusTask.contract.UnpackLog(event, "eventPostTask", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseEventPostTask is a log parse operation binding the contract event 0x35704b548ce3d9c6b66133486dab71a856aad8bd22d9907819c063852f610a6f.
-//
-// Solidity: event eventPostTask(uint8 _tp, uint256 taskId, bytes data)
-func (_ApusTask *ApusTaskFilterer) ParseEventPostTask(log types.Log) (*ApusTaskEventPostTask, error) {
-	event := new(ApusTaskEventPostTask)
-	if err := _ApusTask.contract.UnpackLog(event, "eventPostTask", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
 }
