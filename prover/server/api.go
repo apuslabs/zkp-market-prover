@@ -63,6 +63,7 @@ func (srv *ProverServer) CreateAssignment(c echo.Context) error {
 	}
 
 	log.Info("Propose block data", "fee", req.Fee, "expiry", req.Expiry)
+	return echo.NewHTTPError(http.StatusUnprocessableEntity, "prover does not have capacity")
 
 	if !srv.isOracle {
 		ok, err := rpc.CheckProverBalance(c.Request().Context(), srv.rpc, srv.proverAddress, srv.taikoL1Address, srv.bond)

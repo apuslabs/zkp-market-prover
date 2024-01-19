@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
-	"math"
 	"math/big"
 	"net/http"
 	"strings"
@@ -17,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/taikoxyz/taiko-client/bindings"
@@ -116,101 +114,101 @@ func InitFromConfig(ctx context.Context, p *Prover, cfg *Config) (err error) {
 	p.currentBlocksWaitingForProofWindowMutex = new(sync.Mutex)
 
 	// Clients
-	if p.rpc, err = rpc.NewClient(p.ctx, &rpc.ClientConfig{
-		L1Endpoint:        cfg.L1WsEndpoint,
-		L2Endpoint:        cfg.L2WsEndpoint,
-		TaikoL1Address:    cfg.TaikoL1Address,
-		TaikoL2Address:    cfg.TaikoL2Address,
-		TaikoTokenAddress: cfg.TaikoTokenAddress,
-		RetryInterval:     cfg.BackOffRetryInterval,
-		Timeout:           cfg.RPCTimeout,
-		BackOffMaxRetrys:  new(big.Int).SetUint64(p.cfg.BackOffMaxRetrys),
-	}); err != nil {
-		return err
-	}
-
-	// Configs
-	protocolConfigs, err := p.rpc.TaikoL1.GetConfig(&bind.CallOpts{Context: ctx})
-	if err != nil {
-		return fmt.Errorf("failed to get protocol configs: %w", err)
-	}
-	p.protocolConfigs = &protocolConfigs
-
-	log.Info("Protocol configs", "configs", p.protocolConfigs)
-
-	p.submitProofTxMutex = &sync.Mutex{}
-	p.proverAddress = crypto.PubkeyToAddress(p.cfg.L1ProverPrivKey.PublicKey)
-
-	chBufferSize := p.protocolConfigs.BlockMaxProposals
-	p.blockProposedCh = make(chan *bindings.TaikoL1ClientBlockProposed, chBufferSize)
-	p.blockVerifiedCh = make(chan *bindings.TaikoL1ClientBlockVerified, chBufferSize)
-	p.blockProvenCh = make(chan *bindings.TaikoL1ClientBlockProven, chBufferSize)
-	p.proofGenerationCh = make(chan *proofProducer.ProofWithHeader, chBufferSize)
-	p.proveNotify = make(chan struct{}, 1)
-	if err := p.initL1Current(cfg.StartingBlockID); err != nil {
-		return fmt.Errorf("initialize L1 current cursor error: %w", err)
-	}
-
-	// Concurrency guards
-	//p.proposeConcurrencyGuard = make(chan struct{}, math.MaxInt)
-	p.submitProofConcurrencyGuard = make(chan struct{}, math.MaxInt)
-
-	p.checkProofWindowExpiredInterval = p.cfg.CheckProofWindowExpiredInterval
-
-	oracleProverAddress, err := p.rpc.TaikoL1.Resolve(
-		&bind.CallOpts{Context: ctx},
-		p.rpc.L1ChainID,
-		rpc.StringToBytes32("oracle_prover"),
-		true,
-	)
-	if err != nil {
-		return err
-	}
-
-	p.oracleProverAddress = oracleProverAddress
-
-	var producer proofProducer.ProofProducer
-	if cfg.Dummy {
-		producer = &proofProducer.DummyProofProducer{
-			RandomDummyProofDelayLowerBound: p.cfg.RandomDummyProofDelayLowerBound,
-			RandomDummyProofDelayUpperBound: p.cfg.RandomDummyProofDelayUpperBound,
-			OracleProofSubmissionDelay:      p.cfg.OracleProofSubmissionDelay,
-			ProofWindow:                     p.protocolConfigs.ProofWindow,
-		}
-	} else {
-		if producer, err = proofProducer.NewZkevmRpcdProducer(
-			cfg.ZKEvmRpcdEndpoint,
-			cfg.ZkEvmRpcdParamsPath,
-			cfg.L1HttpEndpoint,
-			cfg.L2HttpEndpoint,
-			true,
-			p.protocolConfigs,
-		); err != nil {
-			return err
-		}
-	}
-
-	// Proof submitter
-	if p.validProofSubmitter, err = proofSubmitter.NewValidProofSubmitter(
-		p.rpc,
-		producer,
-		p.proofGenerationCh,
-		p.cfg.TaikoL2Address,
-		p.cfg.L1ProverPrivKey,
-		p.submitProofTxMutex,
-		p.cfg.OracleProver,
-		p.cfg.Graffiti,
-		p.cfg.ProofSubmissionMaxRetry,
-		p.cfg.BackOffRetryInterval,
-		p.cfg.WaitReceiptTimeout,
-		p.cfg.ProveBlockGasLimit,
-		p.cfg.ProveBlockTxReplacementMultiplier,
-		p.cfg.ProveBlockMaxTxGasTipCap,
-	); err != nil {
-		return err
-	}
-
-	p.capacityManager = capacity.New(cfg.Capacity, cfg.TempCapacityExpiresAt, p.rpc)
+	//if p.rpc, err = rpc.NewClient(p.ctx, &rpc.ClientConfig{
+	//	L1Endpoint:        cfg.L1WsEndpoint,
+	//	L2Endpoint:        cfg.L2WsEndpoint,
+	//	TaikoL1Address:    cfg.TaikoL1Address,
+	//	TaikoL2Address:    cfg.TaikoL2Address,
+	//	TaikoTokenAddress: cfg.TaikoTokenAddress,
+	//	RetryInterval:     cfg.BackOffRetryInterval,
+	//	Timeout:           cfg.RPCTimeout,
+	//	BackOffMaxRetrys:  new(big.Int).SetUint64(p.cfg.BackOffMaxRetrys),
+	//}); err != nil {
+	//	return err
+	//}
+	//
+	//// Configs
+	//protocolConfigs, err := p.rpc.TaikoL1.GetConfig(&bind.CallOpts{Context: ctx})
+	//if err != nil {
+	//	return fmt.Errorf("failed to get protocol configs: %w", err)
+	//}
+	//p.protocolConfigs = &protocolConfigs
+	//
+	//log.Info("Protocol configs", "configs", p.protocolConfigs)
+	//
+	//p.submitProofTxMutex = &sync.Mutex{}
+	//p.proverAddress = crypto.PubkeyToAddress(p.cfg.L1ProverPrivKey.PublicKey)
+	//
+	//chBufferSize := p.protocolConfigs.BlockMaxProposals
+	//p.blockProposedCh = make(chan *bindings.TaikoL1ClientBlockProposed, chBufferSize)
+	//p.blockVerifiedCh = make(chan *bindings.TaikoL1ClientBlockVerified, chBufferSize)
+	//p.blockProvenCh = make(chan *bindings.TaikoL1ClientBlockProven, chBufferSize)
+	//p.proofGenerationCh = make(chan *proofProducer.ProofWithHeader, chBufferSize)
+	//p.proveNotify = make(chan struct{}, 1)
+	//if err := p.initL1Current(cfg.StartingBlockID); err != nil {
+	//	return fmt.Errorf("initialize L1 current cursor error: %w", err)
+	//}
+	//
+	//// Concurrency guards
+	////p.proposeConcurrencyGuard = make(chan struct{}, math.MaxInt)
+	//p.submitProofConcurrencyGuard = make(chan struct{}, math.MaxInt)
+	//
+	//p.checkProofWindowExpiredInterval = p.cfg.CheckProofWindowExpiredInterval
+	//
+	//oracleProverAddress, err := p.rpc.TaikoL1.Resolve(
+	//	&bind.CallOpts{Context: ctx},
+	//	p.rpc.L1ChainID,
+	//	rpc.StringToBytes32("oracle_prover"),
+	//	true,
+	//)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//p.oracleProverAddress = oracleProverAddress
+	//
+	//var producer proofProducer.ProofProducer
+	//if cfg.Dummy {
+	//	producer = &proofProducer.DummyProofProducer{
+	//		RandomDummyProofDelayLowerBound: p.cfg.RandomDummyProofDelayLowerBound,
+	//		RandomDummyProofDelayUpperBound: p.cfg.RandomDummyProofDelayUpperBound,
+	//		OracleProofSubmissionDelay:      p.cfg.OracleProofSubmissionDelay,
+	//		ProofWindow:                     p.protocolConfigs.ProofWindow,
+	//	}
+	//} else {
+	//	if producer, err = proofProducer.NewZkevmRpcdProducer(
+	//		cfg.ZKEvmRpcdEndpoint,
+	//		cfg.ZkEvmRpcdParamsPath,
+	//		cfg.L1HttpEndpoint,
+	//		cfg.L2HttpEndpoint,
+	//		true,
+	//		p.protocolConfigs,
+	//	); err != nil {
+	//		return err
+	//	}
+	//}
+	//
+	//// Proof submitter
+	//if p.validProofSubmitter, err = proofSubmitter.NewValidProofSubmitter(
+	//	p.rpc,
+	//	producer,
+	//	p.proofGenerationCh,
+	//	p.cfg.TaikoL2Address,
+	//	p.cfg.L1ProverPrivKey,
+	//	p.submitProofTxMutex,
+	//	p.cfg.OracleProver,
+	//	p.cfg.Graffiti,
+	//	p.cfg.ProofSubmissionMaxRetry,
+	//	p.cfg.BackOffRetryInterval,
+	//	p.cfg.WaitReceiptTimeout,
+	//	p.cfg.ProveBlockGasLimit,
+	//	p.cfg.ProveBlockTxReplacementMultiplier,
+	//	p.cfg.ProveBlockMaxTxGasTipCap,
+	//); err != nil {
+	//	return err
+	//}
+	//
+	//p.capacityManager = capacity.New(cfg.Capacity, cfg.TempCapacityExpiresAt, p.rpc)
 	// Prover server
 	proverServerOpts := &server.NewProverServerOpts{
 		ProverPrivateKey: p.cfg.L1ProverPrivKey,
@@ -219,7 +217,7 @@ func InitFromConfig(ctx context.Context, p *Prover, cfg *Config) (err error) {
 		CapacityManager:  p.capacityManager,
 		TaikoL1Address:   p.cfg.TaikoL1Address,
 		Rpc:              p.rpc,
-		Bond:             protocolConfigs.ProofBond,
+		Bond:             big.NewInt(10),
 		IsOracle:         p.cfg.OracleProver,
 	}
 	if p.cfg.OracleProver {
@@ -234,14 +232,14 @@ func InitFromConfig(ctx context.Context, p *Prover, cfg *Config) (err error) {
 
 // Start starts the main loop of the L2 block prover.
 func (p *Prover) Start() error {
-	p.wg.Add(1)
-	p.initSubscription()
-	go func() {
-		if err := p.srv.Start(fmt.Sprintf(":%v", p.cfg.HTTPServerPort)); !errors.Is(err, http.ErrServerClosed) {
-			log.Crit("Failed to start http server", "error", err)
-		}
-	}()
-	go p.eventLoop()
+	//p.wg.Add(1)
+	//p.initSubscription()
+	//go func() {
+	if err := p.srv.Start(fmt.Sprintf(":%v", p.cfg.HTTPServerPort)); !errors.Is(err, http.ErrServerClosed) {
+		log.Crit("Failed to start http server", "error", err)
+	}
+	//}()
+	//go p.eventLoop()
 
 	return nil
 }
